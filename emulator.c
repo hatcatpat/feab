@@ -211,11 +211,16 @@ draw()
 uint32_t
 to_color(uint8_t byte)
 {
-    uint32_t color = 0xff;
-    color |= (((byte >> 4) & 3) * 0x55) << 24;
-    color |= (((byte >> 2) & 3) * 0x55) << 16;
-    color |= ((byte & 3) * 0x55) << 8;
-    return color;
+    if(byte)
+        {
+            uint32_t color = 0xff;
+            color |= (((byte >> 4) & 3) * 0x55) << 24;
+            color |= (((byte >> 2) & 3) * 0x55) << 16;
+            color |= ((byte & 3) * 0x55) << 8;
+            return color;
+        }
+    else
+        return 0;
 }
 void
 load_sprites()

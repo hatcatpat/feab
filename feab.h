@@ -4,7 +4,7 @@
 #define MAX(a,b) ((a) > (b) ? (a) : (b))
 #define SQR(x) ((x) * (x))
 
-#define MAX_PROGRAM_SIZE 256
+#define MAX_PROGRAM_SIZE 512
 #define MAX_OPCODE_LENGTH (4 + 1)
 #define NUM_SPRITES 16
 #define STACK_SIZE 16
