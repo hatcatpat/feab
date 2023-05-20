@@ -9,11 +9,21 @@ string_length(const char *source)
 }
 
 void
-string_copy(const char *source, char *dest, int len)
+string_copy(const char *source, char *dest, int length)
 {
     int i;
-    for(i = 0; i < len - 1; ++i)
+    for(i = 0; i < length - 1; ++i)
         dest[i] = source[i];
+    dest[i] = '\0';
+}
+
+void
+string_concat(const char *source, char *dest)
+{
+    int i = 0, j = 0;
+    while(dest[++i] != '\0');
+    while(source[j] != '\0')
+        dest[i++] = source[j++];
     dest[i] = '\0';
 }
 
@@ -28,12 +38,12 @@ string_print_raw(const char *string)
 bool
 string_equals(const char *a, const char *b)
 {
-    int len = string_length(a);
+    int length = string_length(a);
 
-    if(len == string_length(b))
+    if(length == string_length(b))
         {
             int i;
-            for(i = 0; i < len; ++i)
+            for(i = 0; i < length; ++i)
                 if(a[i] != b[i])
                     return false;
 
@@ -122,6 +132,7 @@ string_to_hex(const char *string)
     return v;
 }
 
+#define MAX_FILENAME_LENGTH 16
 #define MAX_FILE_LENGTH 1024 * 4
 
 #define MAX_TOKEN_LENGTH (16 + 1)
@@ -211,7 +222,7 @@ struct
 } macros;
 
 void
-lexer(char *input, int len);
+lexer(char *input, int length);
 
 void
 resolve_macros();
@@ -233,34 +244,39 @@ write(char *file)
 }
 
 void
-assemble(char *file)
+assemble(const char *file)
 {
     char string[MAX_FILE_LENGTH];
-    int len;
+    int length;
     FILE *f = fopen(file, "r");
 
     if(f == NULL)
         return;
 
     fseek(f, 0, SEEK_END);
-    len = ftell(f);
+    length = ftell(f);
     fseek(f, 0, SEEK_SET);
 
-    len = MIN(len, MAX_FILE_LENGTH);
-    fread(string, 1, len, f);
-    string[len - 1] = '\0';
+    length = MIN(length, MAX_FILE_LENGTH);
+    fread(string, 1, length, f);
+    string[length - 1] = '\0';
 
     fclose(f);
 
     printf("[assemble %s]\n", file);
 
-    lexer(string, len);
+    lexer(string, length);
 
-    write("output.rom");
+    {
+        char output[MAX_FILENAME_LENGTH];
+        string_copy(file, output, string_length(file) - 4);
+        string_concat(".rom", output);
+        write(output);
+    }
 }
 
 void
-lexer(char *input, int len)
+lexer(char *input, int length)
 {
     token_t *token = NULL;
     uint_t i = 0, start = 0;
@@ -268,7 +284,7 @@ lexer(char *input, int len)
     bool finish = false;
     char c;
 
-    for(i = 0; i < len; ++i)
+    for(i = 0; i < length; ++i)
         {
             c = input[i];
 
@@ -495,9 +511,10 @@ resolve_macros()
                                 for(j = 0; j < found->length; ++j)
                                     {
                                         token = &found->data[j];
-                                        tokens.data[tokens.length++] = *token;
                                         if(macro != NULL)
                                             macro->data[macro->length++] = *token;
+                                        else
+                                            tokens.data[tokens.length++] = *token;
                                     }
                                 break;
                             }

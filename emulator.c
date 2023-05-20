@@ -258,10 +258,9 @@ sigint(int sig)
 int
 main(int argc, char *argv[])
 {
-    assemble("test.asm");
-    load("output.rom");
+    if(cmd(argc, argv))
+        return 0;
 
-    return 0;
     emulator_init();
 
     signal(SIGINT, sigint);

@@ -1,7 +1,23 @@
-# HOWDY 34 #
-# HMM 1 2 3 4 5 67 HOWDY #
+# A 65 #	# B 66 #	# C 67 #	# D 68 #
+# E 69 #	# F 70 #	# G 71 #	# H 72 #
 
-x: 4
+JUMP start
 
-SET HOWDY 1
-HMM
+p: 0 p_: 0
+char: 0
+string: C A B B A G E 0
+
+print_string:
+	@loop:
+		GET char p
+		CHAR char
+		INC p_
+		CMP char 0
+		ELSE @loop
+	CHAR 10
+	RET
+
+start:
+	REF p string
+	CALL print_string
+	QUIT

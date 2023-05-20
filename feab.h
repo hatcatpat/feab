@@ -23,12 +23,6 @@ typedef unsigned int uint_t;
 
 typedef enum { false, true } bool;
 
-void
-assemble(char *file);
-
-void
-load(char *file);
-
 enum opcodes
 {
     OP_QUIT,
@@ -48,6 +42,8 @@ enum opcodes
     OP_MOREV,
     OP_SET,
     OP_SETV,
+    OP_GET,
+    OP_REF,
     OP_ADD,
     OP_SUB,
     OP_INC,
@@ -133,8 +129,23 @@ typedef struct
 
 extern feab_t feab;
 
-void init();
-void run();
-void load(char *file);
-void print_memory();
-void print_flags();
+void
+assemble(const char *file);
+
+void
+load(const char *file);
+
+void
+init();
+
+void
+run();
+
+void
+print_memory();
+
+void
+print_flags();
+
+int
+cmd(int argc, char *argv[]);

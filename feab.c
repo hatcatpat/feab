@@ -27,6 +27,8 @@ opcode_t opcode[NUM_OPCODES] =
     { "MOREV", 1 },
     { "SET", 2 },
     { "SETV", 2 },
+    { "GET", 2 },
+    { "REF", 2 },
     { "ADD", 2 },
     { "SUB", 2 },
     { "INC", 1 },
@@ -42,7 +44,7 @@ opcode_t opcode[NUM_OPCODES] =
 feab_t feab;
 
 void
-load(char *file)
+load(const char *file)
 {
     uint_t length;
     int i;
@@ -194,6 +196,15 @@ run()
                         feab.memory[a] = b;
                         break;
 
+                    case OP_GET:
+                        b = (feab.memory[b] << 8) | (feab.memory[b + 1]);
+                        feab.memory[a] = feab.memory[b];
+                        break;
+
+                    case OP_REF:
+                        feab.memory[a] = b >> 8, feab.memory[a + 1] = b;
+                        break;
+
                     case OP_ADD:
                         if(mode == MODE_ADDR_ADDR || mode == MODE_VALUE_ADDR)
                             b = feab.memory[b];
@@ -325,4 +336,50 @@ print_flags()
 #undef FLAG_PRINT
 
     printf("\n");
+}
+
+static int
+string_length(const char *source)
+{
+    int i = 0;
+    while(source[i++] != '\0');
+    return i;
+}
+
+static bool
+string_ends(const char *a, const char *b)
+{
+    int length_a = string_length(a) - 1, length_b = string_length(b) - 1;
+    int i;
+
+    if(length_a < length_b || length_a == 0 || length_b == 0)
+        return false;
+
+    for(i = 0; i < length_b; ++i)
+        if(a[length_a - i - 1] != b[length_b - i - 1])
+            return false;
+
+    return true;
+}
+
+int
+cmd(int argc, char *argv[])
+{
+    if(argc == 1)
+        return -1;
+    else
+        {
+            const char *file = argv[1];
+
+            if(string_ends(file, ".rom"))
+                load(file);
+            else
+                {
+                    if(string_ends(file, ".asm"))
+                        assemble(file);
+                    return -1;
+                }
+        }
+
+    return 0;
 }
