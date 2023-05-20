@@ -264,6 +264,7 @@ main(int argc, char *argv[])
     emulator_init();
 
     signal(SIGINT, sigint);
+
     while(!(feab.memory[MEMORY_FLAGS] & FLAG_QUIT))
         {
             events();
@@ -276,6 +277,7 @@ main(int argc, char *argv[])
                     feab.memory[MEMORY_FLAGS] &= ~FLAG_LOAD_SPRITE;
                 }
 
+            fflush(stdout);
             SDL_Delay(16);
         }
 

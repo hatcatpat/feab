@@ -9,6 +9,8 @@
 #define NUM_SPRITES 16
 #define STACK_SIZE 16
 
+/* #define DEBUG */
+
 typedef signed char int8_t;
 typedef unsigned char uint8_t;
 typedef signed short int int16_t;
@@ -46,6 +48,8 @@ enum opcodes
     OP_MOREV,
     OP_SET,
     OP_SETV,
+    OP_ADD,
+    OP_SUB,
     OP_INC,
     OP_DEC,
     OP_AND,
@@ -53,6 +57,7 @@ enum opcodes
     OP_NOT,
     OP_MOD,
     OP_CMP,
+    OP_CHAR,
     NUM_OPCODES
 };
 

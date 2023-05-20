@@ -27,6 +27,8 @@ opcode_t opcode[NUM_OPCODES] =
     { "MOREV", 1 },
     { "SET", 2 },
     { "SETV", 2 },
+    { "ADD", 2 },
+    { "SUB", 2 },
     { "INC", 1 },
     { "DEC", 1 },
     { "AND", 2 },
@@ -34,6 +36,7 @@ opcode_t opcode[NUM_OPCODES] =
     { "NOT", 1 },
     { "MOD", 2 },
     { "CMP", 2 },
+    { "CHAR", 1 },
 };
 
 feab_t feab;
@@ -94,7 +97,9 @@ run()
             code = current & ((1 << 6) - 1);
             mode = current >> 6;
 
+#ifdef DEBUG
             printf("[pc %i] opcode: %i %s\n", feab.pc - 1, code, opcode[code].string);
+#endif
 
             if(opcode[code].args > 0)
                 {
@@ -189,6 +194,17 @@ run()
                         feab.memory[a] = b;
                         break;
 
+                    case OP_ADD:
+                        if(mode == MODE_ADDR_ADDR || mode == MODE_VALUE_ADDR)
+                            b = feab.memory[b];
+                        if(feab.memory[a] > 0xff - b)
+                            {
+                                feab.memory[MEMORY_FLAGS] |= FLAG_OVERFLOW;
+                                feab.memory[MEMORY_FLAGS] &= ~FLAG_UNDERFLOW;
+                            }
+                        feab.memory[a] += b;
+                        break;
+
                     case OP_INC:
                         if(feab.memory[a] == 0xff)
                             {
@@ -196,6 +212,17 @@ run()
                                 feab.memory[MEMORY_FLAGS] &= ~FLAG_UNDERFLOW;
                             }
                         feab.memory[a]++;
+                        break;
+
+                    case OP_SUB:
+                        if(mode == MODE_ADDR_ADDR || mode == MODE_VALUE_ADDR)
+                            b = feab.memory[b];
+                        if(feab.memory[a] < b)
+                            {
+                                feab.memory[MEMORY_FLAGS] |= FLAG_UNDERFLOW;
+                                feab.memory[MEMORY_FLAGS] &= ~FLAG_OVERFLOW;
+                            }
+                        feab.memory[a] -= b;
                         break;
 
                     case OP_DEC:
@@ -244,11 +271,19 @@ run()
                         else
                             feab.memory[MEMORY_FLAGS] |= FLAG_MORE;
                         break;
+
+                    case OP_CHAR:
+                        if(mode == MODE_ADDR_ADDR || mode == MODE_ADDR_VALUE)
+                            a = feab.memory[a];
+                        putchar(a);
+                        break;
                 }
         }
 
+#ifdef DEBUG
     print_memory();
     print_flags();
+#endif
 }
 
 void

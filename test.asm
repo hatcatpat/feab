@@ -1,11 +1,16 @@
 JUMP start
 
-x: xh: 0 xl: 0
+x: 0 y: 0
 
 start:
-	SET xh 1
-	SET xl 8
-	SETV x 34
-loop:
-	WAIT
-	JUMP loop
+	SET y x
+	ADD y 48
+	CHAR y
+	INC x
+	CMP x 10
+	ELSE @ahead
+		SET x 0
+		CHAR 10
+	@ahead:
+		WAIT
+		JUMP start
