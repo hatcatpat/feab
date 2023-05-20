@@ -261,6 +261,7 @@ main(int argc, char *argv[])
     assemble("test.asm");
     load("output.rom");
 
+    return 0;
     emulator_init();
 
     signal(SIGINT, sigint);

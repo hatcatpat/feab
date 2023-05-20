@@ -122,11 +122,16 @@ string_to_hex(const char *string)
     return v;
 }
 
-#define MAX_TOKEN_LENGTH (16 + 1)
 #define MAX_FILE_LENGTH 1024 * 4
+
+#define MAX_TOKEN_LENGTH (16 + 1)
 #define MAX_TOKENS 1024 * 2
+
 #define MAX_LABELS 64
 #define MAX_SUBLABELS 16
+
+#define MAX_MACROS 64
+#define MAX_MACRO_SIZE 16
 
 enum token_type
 {
@@ -137,7 +142,8 @@ enum token_type
     TOKEN_BINARY,
     TOKEN_LABEL,
     TOKEN_SUBLABEL,
-    TOKEN_COMMENT
+    TOKEN_COMMENT,
+    TOKEN_MACRO
 };
 
 const char *token_type_names[] =
@@ -149,7 +155,8 @@ const char *token_type_names[] =
     "BINARY",
     "LABEL",
     "SUBLABEL",
-    "COMMENT"
+    "COMMENT",
+    "MACRO"
 };
 
 typedef struct
@@ -176,11 +183,13 @@ struct
     uint_t length;
 } program;
 
-struct
+typedef struct
 {
     token_t data[MAX_TOKENS];
     uint_t length;
-} tokens;
+} tokens_t;
+
+tokens_t tokens;
 
 struct
 {
@@ -188,8 +197,24 @@ struct
     uint_t length;
 } labels;
 
+typedef struct
+{
+    char string[MAX_TOKEN_LENGTH];
+    token_t data[MAX_MACRO_SIZE];
+    uint_t length;
+} macro_t;
+
+struct
+{
+    macro_t data[MAX_MACROS];
+    uint_t length;
+} macros;
+
 void
 lexer(char *input, int len);
+
+void
+resolve_macros();
 
 void
 parser();
@@ -266,6 +291,12 @@ lexer(char *input, int len)
 
                                 case ';':
                                     type = TOKEN_COMMENT;
+                                    break;
+
+                                case '#':
+                                    type = TOKEN_MACRO;
+                                    start = i + 1;
+                                    finish = true;
                                     break;
 
                                 case '0':
@@ -409,10 +440,86 @@ lexer(char *input, int len)
                 }
         }
 
+    resolve_macros();
+
     for(i = 0; i < tokens.length; ++i)
         printf("[%i] %s %s\n", i, token_type_names[tokens.data[i].type], tokens.data[i].string);
 
     parser();
+}
+
+macro_t *
+macro_find(char *string)
+{
+    int i;
+    for(i = 0; i < macros.length; ++i)
+        if(string_equals(macros.data[i].string, string))
+            return &macros.data[i];
+
+    return NULL;
+}
+
+void
+resolve_macros()
+{
+    int i = 0;
+    token_t *token = NULL;
+    macro_t *macro = NULL;
+    tokens_t old = tokens;
+    tokens.length = 0;
+
+    while(i < old.length)
+        {
+            token = &old.data[i++];
+
+            switch(token->type)
+                {
+                    case TOKEN_MACRO:
+                        if(macro == NULL)
+                            {
+                                token = &old.data[i++];
+                                macro = &macros.data[macros.length++];
+                                string_copy(token->string, macro->string, string_length(token->string));
+                            }
+                        else
+                            macro = NULL;
+                        break;
+
+                    case TOKEN_SYMBOL:
+                    {
+                        macro_t *found = macro_find(token->string);
+
+                        if(found != NULL)
+                            {
+                                int j;
+                                for(j = 0; j < found->length; ++j)
+                                    {
+                                        token = &found->data[j];
+                                        tokens.data[tokens.length++] = *token;
+                                        if(macro != NULL)
+                                            macro->data[macro->length++] = *token;
+                                    }
+                                break;
+                            }
+                    }
+                    default:
+                        if(macro != NULL)
+                            macro->data[macro->length++] = *token;
+                        else
+                            tokens.data[tokens.length++] = *token;
+                        break;
+                }
+        }
+
+    printf("[macros] %i\n", macros.length);
+    for(i = 0; i < macros.length; ++i)
+        {
+            int j;
+            printf("\t[%s] ", macros.data[i].string);
+            for(j = 0; j < macros.data[i].length; ++j)
+                printf("(%s %s) ", token_type_names[macros.data[i].data[j].type], macros.data[i].data[j].string);
+            printf("\n");
+        }
 }
 
 uint8_t
@@ -516,9 +623,9 @@ resolve_labels()
                 {
                     label = &labels.data[i];
                     if(j == 0)
-                        printf("[%i] %s (%i)\n", i, label->label[j].string, label->label[j].address);
+                        printf("\t[%s] %i\n", label->label[j].string, label->label[j].address);
                     else
-                        printf("\t[%i] %s (%i)\n", j - 1, label->label[j].string, label->label[j].address);
+                        printf("\t\t[%s] %i\n", label->label[j].string, label->label[j].address);
                 }
         }
 }
