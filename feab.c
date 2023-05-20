@@ -14,12 +14,19 @@ opcode_t opcode[NUM_OPCODES] =
     { "WAIT", 0 },
     { "RET", 0 },
     { "JUMP", 1 },
+    { "JUMPV", 1 },
     { "CALL", 1 },
+    { "CALLV", 1 },
     { "IF", 1 },
+    { "IFV", 1 },
     { "ELSE", 1 },
+    { "ELSEV", 1 },
     { "LESS", 1 },
+    { "LESSV", 1 },
     { "MORE", 1 },
+    { "MOREV", 1 },
     { "SET", 2 },
+    { "SETV", 2 },
     { "INC", 1 },
     { "DEC", 1 },
     { "AND", 2 },
@@ -133,35 +140,49 @@ run()
                         feab.pc = feab.stack[--feab.sc];
                         break;
 
+                    case OP_JUMPV:
+                        a = (feab.memory[a] << 8) | (feab.memory[a + 1]);
                     case OP_JUMP:
                         feab.pc = a;
                         break;
 
+                    case OP_CALLV:
+                        a = (feab.memory[a] << 8) | (feab.memory[a + 1]);
                     case OP_CALL:
                         feab.stack[feab.sc++] = feab.pc;
                         feab.pc = a;
                         break;
 
+                    case OP_IFV:
+                        a = (feab.memory[a] << 8) | (feab.memory[a + 1]);
                     case OP_IF:
                         if(feab.memory[MEMORY_FLAGS] & FLAG_EQUAL)
                             feab.pc = a;
                         break;
 
+                    case OP_ELSEV:
+                        a = (feab.memory[a] << 8) | (feab.memory[a + 1]);
                     case OP_ELSE:
                         if(feab.memory[MEMORY_FLAGS] & (FLAG_LESS | FLAG_MORE))
                             feab.pc = a;
                         break;
 
+                    case OP_LESSV:
+                        a = (feab.memory[a] << 8) | (feab.memory[a + 1]);
                     case OP_LESS:
                         if(feab.memory[MEMORY_FLAGS] & FLAG_LESS)
                             feab.pc = a;
                         break;
 
+                    case OP_MOREV:
+                        a = (feab.memory[a] << 8) | (feab.memory[a + 1]);
                     case OP_MORE:
                         if(feab.memory[MEMORY_FLAGS] & FLAG_MORE)
                             feab.pc = a;
                         break;
 
+                    case OP_SETV:
+                        a = (feab.memory[a] << 8) | (feab.memory[a + 1]);
                     case OP_SET:
                         if(mode == MODE_ADDR_ADDR || mode == MODE_VALUE_ADDR)
                             b = feab.memory[b];
@@ -235,11 +256,15 @@ print_memory()
 {
     int i;
     printf("[memory]\n");
-    for(i = 0; i < feab.length; ++i)
-        if(i == PROGRAM_START)
-            printf("*START* %i ", feab.memory[i]);
-        else
+    for(i = 0; i < MAX_PROGRAM_SIZE; ++i)
+        {
+            if(i == PROGRAM_START)
+                printf("*START* ");
+            else if(i == feab.length)
+                printf("*END* ");
+
             printf("%i ", feab.memory[i]);
+        }
     printf("\n");
 }
 

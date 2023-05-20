@@ -234,7 +234,6 @@ assemble(char *file)
     write("output.rom");
 }
 
-
 void
 lexer(char *input, int len)
 {

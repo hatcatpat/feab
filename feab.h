@@ -5,7 +5,7 @@
 #define SQR(x) ((x) * (x))
 
 #define MAX_PROGRAM_SIZE 512
-#define MAX_OPCODE_LENGTH (4 + 1)
+#define MAX_OPCODE_LENGTH (5 + 1)
 #define NUM_SPRITES 16
 #define STACK_SIZE 16
 
@@ -33,12 +33,19 @@ enum opcodes
     OP_WAIT,
     OP_RET,
     OP_JUMP,
+    OP_JUMPV,
     OP_CALL,
+    OP_CALLV,
     OP_IF,
+    OP_IFV,
     OP_ELSE,
+    OP_ELSEV,
     OP_LESS,
+    OP_LESSV,
     OP_MORE,
+    OP_MOREV,
     OP_SET,
+    OP_SETV,
     OP_INC,
     OP_DEC,
     OP_AND,
