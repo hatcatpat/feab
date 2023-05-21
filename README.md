@@ -4,6 +4,13 @@
 
 *feab* is a fantasy console, similar to [pico8](https://www.lexaloffle.com/pico-8.php) and [tic80](https://tic80.com/), and an 8bit assembly language inspired by (6502 or [uxntal](https://wiki.xxiivv.com/site/uxntal.html))
 
+## dependencies
+* ansi c
+* only dependency of the assembler/vm is stdio.h, and no dynamic memory is used
+* emulator uses SDL2
+
+## info
+
 * the console and program are stored in a single array, meaning that you are free to modify any byte of the console or program whenever you want. the only exceptions being the return stack, stack counter (sc) and program counter (pc), and program length
 
 * there are no registers, so all opcodes are applied to a given location in memory
