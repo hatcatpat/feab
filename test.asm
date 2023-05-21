@@ -1,9 +1,9 @@
 JUMP start
 
 t: 0
-t2: 0
-k: 0 0
+k: 0
 x: 0 y: 0
+moving: 0
 
 ptr: 0 ptr_: 0
 char: 0
@@ -28,37 +28,60 @@ start:
 	REF ptr string
 	CALL print_string
 
-	SET PALETTE_1 %110000
-	SET PALETTE_2 %001100
-	SET PALETTE_3 %000011
-	OR FLAGS 4 ; load sprite
-	SET SPRITES_ROW_0 ff ; enable sprites
+	SET PALETTE_1 %110000 ; 01 R
+	SET PALETTE_2 %001100 ; 10 G
+	SET PALETTE_3 %000011 ; 11 B
+
+	GET SPRITE_0_S s
 
 	SET x 32
 	SET y 32
 	GET SPRITE_0_X x
 	GET SPRITE_0_Y y
-	SET 10 %10000010
-	SET 11 %11101011
-	SET 12 %10010110
-	SET 13 %10101010
+	SET SPRITE_0_ROW_0 %10000010
+	SET SPRITE_0_ROW_1 %11101011
+	SET SPRITE_0_ROW_2 %10010110
+	SET SPRITE_0_ROW_3 %10101010
+
+	SET SPRITE_1_ROW_0 %00001010
+	SET SPRITE_1_ROW_1 %00101110
+	SET SPRITE_1_ROW_2 %00100101
+	SET SPRITE_1_ROW_3 %00101010
+
+	SET SPRITE_2_ROW_0 %10100000
+	SET SPRITE_2_ROW_1 %10111000
+	SET SPRITE_2_ROW_2 %01011000
+	SET SPRITE_2_ROW_3 %10101000
+
+	OR FLAGS 4 ; load sprite
 
 	@loop:
-		GET PALETTE_0 t2
-		MOD t 8
-		CMP t 0
-		ELSE @1 INC t2
-		@1:
-			CMPLEFT IF @2 DEC x
-		@2:
-			CMPRIGHT IF @3 INC x
-		@3:
-			CMPUP IF @4 DEC y
-		@4:
-			CMPDOWN IF @done INC y
+		SET moving 0
+		@left:
+			CMPLEFT IF @right
+				DEC x
+				SET moving 1
+				SET SPRITE_0_S 2
+		@right:
+			CMPRIGHT IF @up
+				INC x
+				SET moving 1
+				SET SPRITE_0_S 1
+		@up:
+			CMPUP IF @down
+				DEC y
+				SET moving 1
+		@down:
+			CMPDOWN IF @move
+				INC y
+				SET moving 1
+		@move:
+			CMP moving 0
+			ELSE @done
+				SET t 0
+				SET SPRITE_0_S 0
 		@done:
 			GET SPRITE_0_X x
 			GET SPRITE_0_Y y
-			INC t
 			WAIT
 			JUMP @loop

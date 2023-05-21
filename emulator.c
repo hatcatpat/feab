@@ -8,7 +8,7 @@
 #define HEIGHT 64
 #define PIXEL_FORMAT SDL_PIXELFORMAT_RGBA8888
 
-void keydown(SDL_KeyCode key);
+void key(SDL_KeyCode key, bool down);
 void draw();
 void events();
 
@@ -73,75 +73,64 @@ emulator_deinit()
 }
 
 void
-keydown(SDL_KeyCode key)
+key(SDL_KeyCode key, bool down)
 {
     switch(key)
         {
             case 'q':
             case SDLK_ESCAPE:
-                feab.memory[MEMORY_FLAGS] |= FLAG_QUIT;
+                if(down)
+                    feab.memory[MEMORY_FLAGS] |= FLAG_QUIT;
                 break;
 
             case SDLK_LEFT:
-                feab.memory[MEMORY_KEYS] |= KEY_LEFT;
+                if(down)
+                    feab.memory[MEMORY_KEYS] |= KEY_LEFT;
+                else
+                    feab.memory[MEMORY_KEYS] &= ~KEY_LEFT;
                 break;
             case SDLK_RIGHT:
-                feab.memory[MEMORY_KEYS] |= KEY_RIGHT;
+                if(down)
+                    feab.memory[MEMORY_KEYS] |= KEY_RIGHT;
+                else
+                    feab.memory[MEMORY_KEYS] &= ~KEY_RIGHT;
                 break;
             case SDLK_UP:
-                feab.memory[MEMORY_KEYS] |= KEY_UP;
+                if(down)
+                    feab.memory[MEMORY_KEYS] |= KEY_UP;
+                else
+                    feab.memory[MEMORY_KEYS] &= ~KEY_UP;
                 break;
             case SDLK_DOWN:
-                feab.memory[MEMORY_KEYS] |= KEY_DOWN;
+                if(down)
+                    feab.memory[MEMORY_KEYS] |= KEY_DOWN;
+                else
+                    feab.memory[MEMORY_KEYS] &= ~KEY_DOWN;
                 break;
 
             case 'z':
-                feab.memory[MEMORY_KEYS] |= KEY_Z;
+                if(down)
+                    feab.memory[MEMORY_KEYS] |= KEY_Z;
+                else
+                    feab.memory[MEMORY_KEYS] &= ~KEY_Z;
                 break;
             case 'x':
-                feab.memory[MEMORY_KEYS] |= KEY_X;
+                if(down)
+                    feab.memory[MEMORY_KEYS] |= KEY_X;
+                else
+                    feab.memory[MEMORY_KEYS] &= ~KEY_X;
                 break;
             case 'c':
-                feab.memory[MEMORY_KEYS] |= KEY_C;
+                if(down)
+                    feab.memory[MEMORY_KEYS] |= KEY_C;
+                else
+                    feab.memory[MEMORY_KEYS] &= ~KEY_C;
                 break;
             case 'v':
-                feab.memory[MEMORY_KEYS] |= KEY_V;
-                break;
-
-            default:
-                break;
-        }
-}
-
-void
-keyup(SDL_KeyCode key)
-{
-    switch(key)
-        {
-            case SDLK_LEFT:
-                feab.memory[MEMORY_KEYS] &= ~KEY_LEFT;
-                break;
-            case SDLK_RIGHT:
-                feab.memory[MEMORY_KEYS] &= ~KEY_RIGHT;
-                break;
-            case SDLK_UP:
-                feab.memory[MEMORY_KEYS] &= ~KEY_UP;
-                break;
-            case SDLK_DOWN:
-                feab.memory[MEMORY_KEYS] &= ~KEY_DOWN;
-                break;
-
-            case 'z':
-                feab.memory[MEMORY_KEYS] &= ~KEY_Z;
-                break;
-            case 'x':
-                feab.memory[MEMORY_KEYS] &= ~KEY_X;
-                break;
-            case 'c':
-                feab.memory[MEMORY_KEYS] &= ~KEY_C;
-                break;
-            case 'v':
-                feab.memory[MEMORY_KEYS] &= ~KEY_V;
+                if(down)
+                    feab.memory[MEMORY_KEYS] |= KEY_V;
+                else
+                    feab.memory[MEMORY_KEYS] &= ~KEY_V;
                 break;
 
             default:
@@ -163,11 +152,11 @@ events()
                         break;
 
                     case SDL_KEYDOWN:
-                        keydown(event.key.keysym.sym);
+                        key(event.key.keysym.sym, true);
                         break;
 
                     case SDL_KEYUP:
-                        keyup(event.key.keysym.sym);
+                        key(event.key.keysym.sym, false);
                         break;
                 }
         }
@@ -186,17 +175,19 @@ draw()
     {
         static SDL_Rect src = { 0, 0, 4, 4 };
         static SDL_Rect dest = { 0, 0, 4, 4 };
-        static int i;
+        static int i, s;
 
         SDL_RenderClear(render);
 
         for(i = 0; i < NUM_SPRITES; ++i)
             {
-                if(!(feab.memory[MEMORY_SPRITES_ROW_0] & (1 << i)))
+                s = feab.memory[MEMORY_SPRITE_0_S + i * 4];
+
+                if(s == NUM_SPRITES)
                     continue;
 
-                src.x = 4 * (i % 4), src.y = 4 * (i / 4);
-                dest.x = feab.memory[MEMORY_SPRITE_0_X + 6 * i] - 4, dest.y = feab.memory[MEMORY_SPRITE_0_Y + 6 * i] - 4;
+                src.x = 4 * (s % 4), src.y = 4 * (s / 4);
+                dest.x = feab.memory[MEMORY_SPRITE_0_X + 4 * i] - 4, dest.y = feab.memory[MEMORY_SPRITE_0_Y + 4 * i] - 4;
 
                 SDL_RenderCopy(render, sprites, &src, &dest);
             }
@@ -236,7 +227,7 @@ load_sprites()
 
             for(y = 0; y < 4; ++y)
                 {
-                    row = feab.memory[sprite * 6 + MEMORY_SPRITE_0_ROW_0 + y];
+                    row = feab.memory[sprite * 4 + MEMORY_SPRITE_0_ROW_0 + y];
 
                     for(x = 0; x < 4; ++x)
                         {

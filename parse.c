@@ -549,9 +549,11 @@ default_macros()
     /* memory locations */
     {
 #define S(X) #X
-#define SPRITE_DATA(I)\
+#define SPRITE(I)\
     S(SPRITE_##I##_X),\
 	S(SPRITE_##I##_Y),\
+	S(SPRITE_##I##_S)
+#define SPRITE_DATA(I)\
     S(SPRITE_##I##_ROW_0),\
     S(SPRITE_##I##_ROW_1),\
     S(SPRITE_##I##_ROW_2),\
@@ -561,13 +563,17 @@ default_macros()
             S(FLAGS),
             S(KEYS),
             S(PALETTE_0), S(PALETTE_1), S(PALETTE_2), S(PALETTE_3),
-            S(SPRITES_ROW_0), S(SPRITES_ROW_1),
+            SPRITE(0), SPRITE(1), SPRITE(2), SPRITE(3),
+            SPRITE(4), SPRITE(5), SPRITE(6), SPRITE(7),
+            SPRITE(8), SPRITE(9), SPRITE(10), SPRITE(11),
+            SPRITE(12), SPRITE(13), SPRITE(14), SPRITE(15),
             SPRITE_DATA(0), SPRITE_DATA(1), SPRITE_DATA(2), SPRITE_DATA(3),
             SPRITE_DATA(4), SPRITE_DATA(5), SPRITE_DATA(6), SPRITE_DATA(7),
             SPRITE_DATA(8), SPRITE_DATA(9), SPRITE_DATA(10), SPRITE_DATA(11),
             SPRITE_DATA(12), SPRITE_DATA(13), SPRITE_DATA(14), SPRITE_DATA(15),
             S(PROGRAM_START)
         };
+#undef SPRITE
 #undef SPRITE_DATA
 #undef S
         char number[3 + 1] = "";

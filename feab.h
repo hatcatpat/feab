@@ -2,14 +2,13 @@
 
 #define MIN(a,b) ((a) < (b) ? (a) : (b))
 #define MAX(a,b) ((a) > (b) ? (a) : (b))
-#define SQR(x) ((x) * (x))
 
 #define MAX_PROGRAM_SIZE 512
 #define MAX_OPCODE_LENGTH (7 + 1)
 #define NUM_SPRITES 16
 #define STACK_SIZE 16
 
-/* #define DEBUG */
+#define DEBUG
 
 typedef signed char int8_t;
 typedef unsigned char uint8_t;
@@ -101,25 +100,32 @@ enum keys
     KEY_V = (1 << 7)
 };
 
-#define SPRITE_DATA(x)\
-    MEMORY_SPRITE_##x##_X,\
-	MEMORY_SPRITE_##x##_Y,\
-    MEMORY_SPRITE_##x##_ROW_0,\
-    MEMORY_SPRITE_##x##_ROW_1,\
-    MEMORY_SPRITE_##x##_ROW_2,\
-    MEMORY_SPRITE_##x##_ROW_3
+#define SPRITE(I)\
+	MEMORY_SPRITE_##I##_X,\
+	MEMORY_SPRITE_##I##_Y,\
+	MEMORY_SPRITE_##I##_S
+
+#define SPRITE_DATA(I)\
+    MEMORY_SPRITE_##I##_ROW_0,\
+    MEMORY_SPRITE_##I##_ROW_1,\
+    MEMORY_SPRITE_##I##_ROW_2,\
+    MEMORY_SPRITE_##I##_ROW_3
 enum memory
 {
     MEMORY_FLAGS,
     MEMORY_KEYS,
     MEMORY_PALETTE_0, MEMORY_PALETTE_1, MEMORY_PALETTE_2, MEMORY_PALETTE_3,
-    MEMORY_SPRITES_ROW_0, MEMORY_SPRITES_ROW_1,
+    SPRITE(0), SPRITE(1), SPRITE(2), SPRITE(3),
+    SPRITE(4), SPRITE(5), SPRITE(6), SPRITE(7),
+    SPRITE(8), SPRITE(9), SPRITE(10), SPRITE(11),
+    SPRITE(12), SPRITE(13), SPRITE(14), SPRITE(15),
     SPRITE_DATA(0), SPRITE_DATA(1), SPRITE_DATA(2), SPRITE_DATA(3),
     SPRITE_DATA(4), SPRITE_DATA(5), SPRITE_DATA(6), SPRITE_DATA(7),
     SPRITE_DATA(8), SPRITE_DATA(9), SPRITE_DATA(10), SPRITE_DATA(11),
     SPRITE_DATA(12), SPRITE_DATA(13), SPRITE_DATA(14), SPRITE_DATA(15),
     PROGRAM_START
 };
+#undef SPRITE
 #undef SPRITE_DATA
 
 typedef struct
