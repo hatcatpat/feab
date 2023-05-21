@@ -27,6 +27,8 @@ opcode_t opcode[NUM_OPCODES] =
     { "MOREV", 1 },
     { "SET", 2 },
     { "SETV", 2 },
+    { "GET", 2 },
+    { "GETV", 2 },
     { "DEREF", 2 },
     { "DEREFV", 2 },
     { "REF", 2 },
@@ -193,9 +195,13 @@ run()
                     case OP_SETV:
                         a = (feab.memory[a] << 8) | (feab.memory[a + 1]);
                     case OP_SET:
-                        if(mode == MODE_ADDR_ADDR || mode == MODE_VALUE_ADDR)
-                            b = feab.memory[b];
                         feab.memory[a] = b;
+                        break;
+
+                    case OP_GETV:
+                        a = (feab.memory[a] << 8) | (feab.memory[a + 1]);
+                    case OP_GET:
+                        feab.memory[a] = feab.memory[b];
                         break;
 
                     case OP_DEREFV:

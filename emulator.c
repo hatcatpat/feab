@@ -192,7 +192,7 @@ draw()
 
         for(i = 0; i < NUM_SPRITES; ++i)
             {
-                if(!(feab.memory[MEMORY_SPRITES_ROW_0_FLAGS] & (1 << i)))
+                if(!(feab.memory[MEMORY_SPRITES_ROW_0] & (1 << i)))
                     continue;
 
                 src.x = 4 * (i % 4), src.y = 4 * (i / 4);

@@ -77,6 +77,38 @@ string_binary_to_number(const char *string)
 }
 
 int
+nearest10(int number)
+{
+    int i = 0;
+    while(number)
+        {
+            number /= 10;
+            i++;
+        }
+    return i;
+}
+
+int
+power(int a, int b)
+{
+    int i;
+    int x = 1;
+    for(i = 0; i < b; ++i)
+        x *= a;
+    return x;
+}
+
+char *
+number_to_string(char *string, int number)
+{
+    int i, n = nearest10(number);
+    for(i = 0; i < n; ++i)
+        string[i] = '0' + (number / power(10, n - 1 - i)) % 10;
+    string[i + 1] = '\0';
+    return string;
+}
+
+int
 string_to_number(const char *string)
 {
     int i, d = 1, v = 0;
@@ -138,10 +170,10 @@ string_to_hex(const char *string)
 #define MAX_TOKEN_LENGTH (16 + 1)
 #define MAX_TOKENS 1024 * 2
 
-#define MAX_LABELS 64
-#define MAX_SUBLABELS 16
+#define MAX_LABELS 128
+#define MAX_SUBLABELS 32
 
-#define MAX_MACROS 64
+#define MAX_MACROS 256
 #define MAX_MACRO_SIZE 16
 
 enum token_type
@@ -475,6 +507,97 @@ macro_find(char *string)
     return NULL;
 }
 
+/* WARNING: here be macros */
+void
+default_macros()
+{
+#define ADD_MACRO(STRING)\
+    macro = &macros.data[macros.length++];\
+    string_copy(STRING, macro->string, string_length(STRING));
+
+#define ADD_TOKEN(TYPE, STRING)\
+    string_copy(STRING, token.string, string_length(STRING));\
+	token.type = TYPE;\
+	macro->data[macro->length++] = token;
+
+#define ADD_MACRO_NUMBER(NAME, NUMBER)\
+	ADD_MACRO(NAME);\
+	ADD_TOKEN(TOKEN_NUMBER, #NUMBER);
+
+    macro_t *macro = NULL;
+    token_t token;
+
+    /* ascii */
+    ADD_MACRO_NUMBER("SPACE", 32);
+    ADD_MACRO_NUMBER("!", 33);
+    ADD_MACRO_NUMBER("?", 63);
+    {
+        char letter[1 + 1] = "";
+        char number[3 + 1] = "";
+        int i;
+        for(i = 'A'; i <= 'Z'; ++i)
+            {
+                letter[0] = i;
+                number_to_string(number, i);
+
+                ADD_MACRO(letter);
+                ADD_TOKEN(TOKEN_NUMBER, number);
+            }
+    }
+    /* */
+
+    /* memory locations */
+    {
+#define S(X) #X
+#define SPRITE_DATA(I)\
+    S(SPRITE_##I##_X),\
+	S(SPRITE_##I##_Y),\
+    S(SPRITE_##I##_ROW_0),\
+    S(SPRITE_##I##_ROW_1),\
+    S(SPRITE_##I##_ROW_2),\
+    S(SPRITE_##I##_ROW_3)
+        const char *names[PROGRAM_START + 1] =
+        {
+            S(FLAGS),
+            S(KEYS),
+            S(PALETTE_0), S(PALETTE_1), S(PALETTE_2), S(PALETTE_3),
+            S(SPRITES_ROW_0), S(SPRITES_ROW_1),
+            SPRITE_DATA(0), SPRITE_DATA(1), SPRITE_DATA(2), SPRITE_DATA(3),
+            SPRITE_DATA(4), SPRITE_DATA(5), SPRITE_DATA(6), SPRITE_DATA(7),
+            SPRITE_DATA(8), SPRITE_DATA(9), SPRITE_DATA(10), SPRITE_DATA(11),
+            SPRITE_DATA(12), SPRITE_DATA(13), SPRITE_DATA(14), SPRITE_DATA(15),
+            S(PROGRAM_START)
+        };
+#undef SPRITE_DATA
+#undef S
+        char number[3 + 1] = "";
+        int i;
+        for(i = 0; i < PROGRAM_START + 1; ++i)
+            {
+                number_to_string(number, i);
+
+                ADD_MACRO(names[i]);
+                ADD_TOKEN(TOKEN_NUMBER, number);
+            }
+    }
+    /* */
+
+    /* keys */
+    ADD_MACRO_NUMBER("LEFT", 1);
+    ADD_MACRO_NUMBER("RIGHT", 2);
+    ADD_MACRO_NUMBER("UP", 4);
+    ADD_MACRO_NUMBER("DOWN", 8);
+    ADD_MACRO_NUMBER("Z", 16);
+    ADD_MACRO_NUMBER("X", 32);
+    ADD_MACRO_NUMBER("C", 64);
+    ADD_MACRO_NUMBER("V", 128);
+    /* */
+
+#undef ADD_MACRO_NUMBER
+#undef ADD_TOKEN
+#undef ADD_MACRO
+}
+
 void
 resolve_macros()
 {
@@ -483,6 +606,8 @@ resolve_macros()
     macro_t *macro = NULL;
     tokens_t old = tokens;
     tokens.length = 0;
+
+    default_macros();
 
     while(i < old.length)
         {
@@ -494,8 +619,14 @@ resolve_macros()
                         if(macro == NULL)
                             {
                                 token = &old.data[i++];
-                                macro = &macros.data[macros.length++];
-                                string_copy(token->string, macro->string, string_length(token->string));
+                                macro = macro_find(token->string);
+                                if(macro == NULL)
+                                    {
+                                        macro = &macros.data[macros.length++];
+                                        string_copy(token->string, macro->string, string_length(token->string));
+                                    }
+                                else
+                                    macro->length = 0;
                             }
                         else
                             macro = NULL;
