@@ -33,8 +33,8 @@
 
 * there are 4 colours (background, 1, 2, 3), each rgb component has 2 bits (0, 85, 170, 255)
 
-* there are 16 sprites, each with an (x,y) coordinate. sprites are enabled or disabled using a flag, each flag controlling 8 sprites
+* there are 16 sprites, each with an (x,y) coordinate and sprite id. if the id is 16 the sprite will be hidden, otherwise it will draw the specified sprite data
 
-* sprite data is 4 rows of the form 00 00 00 00, where each 2 bits determines the colour used for that pixel
+* sprites are 4x4 pixels and consist of 4 rows of the form 00 00 00 00, where each 2 bits determines the colour used for that pixel (00 is colour 0, 01 is color 1, etc)
 
-* to reload sprite data, a flag must be flipped
+* to reload sprite data, the load_sprite flag (4) must be enabled
