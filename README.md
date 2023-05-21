@@ -4,9 +4,9 @@
 
 *feab* is a fantasy console, similar to [pico8](https://www.lexaloffle.com/pico-8.php) and [tic80](https://tic80.com/), and an 8bit assembly language inspired by (6502 or [uxntal](https://wiki.xxiivv.com/site/uxntal.html))
 
-* the console and program are stored in a single array, meaning that you are free to modify any byte of the console or program whenever you want. the only exceptions being the return stack, stack counter (sc) and program counter (pc), and program length.
+* the console and program are stored in a single array, meaning that you are free to modify any byte of the console or program whenever you want. the only exceptions being the return stack, stack counter (sc) and program counter (pc), and program length
 
-* there are no registers, so all opcodes are applied to a given location in memory.
+* there are no registers, so all opcodes are applied to a given location in memory
 
 * labels act as functions or variables, depending on how you use them. a label is simply a location in memory, so you can either jump to that location (function), or modify the byte at that location (variable).
 
@@ -15,7 +15,7 @@
 * macros are of the form # NAME A B C D ... #
   * ascii letters, useful memory locations, and key bitflags are avaiable as macros by default
 
-* addresses are 16-bits wide (two 8-bits). if you use a label, it will be converted to a 16-bit number. numbers prefixed with a & will also be converted to a 16-bit number.
+* addresses are 16-bits wide (two 8-bits). if you use a label, it will be converted to a 16-bit number. numbers prefixed with a & will also be converted to a 16-bit number
 
 * numbers can be base-10, hexadecimal (ff), or binary (%01101100)
 
@@ -29,4 +29,12 @@
   * RET -> returns to the previous location on the return stack
   * WAIT -> waits until the next frame
 
-* many opcodes also have a V (value) mode, which treats the first argument as a pointer to an address. this allows you to store addresses in variables, and modify the address that is pointed to.
+* many opcodes also have a V (value) mode, which treats the first argument as a pointer to an address. this allows you to store addresses in variables, and modify the address that is pointed to
+
+* there are 4 colours (background, 1, 2, 3), each rgb component has 2 bits (0, 85, 170, 255)
+
+* there are 16 sprites, each with an (x,y) coordinate. sprites are enabled or disabled using a flag, each flag controlling 8 sprites
+
+* sprite data is 4 rows of the form 00 00 00 00, where each 2 bits determines the colour used for that pixel
+
+* to reload sprite data, a flag must be flipped
