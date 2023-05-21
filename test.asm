@@ -3,6 +3,7 @@ JUMP start
 t: 0
 t2: 0
 k: 0 0
+x: 0 y: 0
 
 ptr: 0 ptr_: 0
 char: 0
@@ -18,6 +19,11 @@ print_string:
 	CHAR 10
 	RET
 
+# CMPLEFT 	GET k KEYS AND k LEFT CMP k 0 #
+# CMPRIGHT 	GET k KEYS AND k RIGHT CMP k 0 #
+# CMPUP	 	GET k KEYS AND k UP CMP k 0 #
+# CMPDOWN	GET k KEYS AND k DOWN CMP k 0 #
+
 start:
 	REF ptr string
 	CALL print_string
@@ -28,8 +34,10 @@ start:
 	OR FLAGS 4 ; load sprite
 	SET SPRITES_ROW_0 ff ; enable sprites
 
-	SET SPRITE_0_X 32
-	SET SPRITE_0_Y 32
+	SET x 32
+	SET y 32
+	GET SPRITE_0_X x
+	GET SPRITE_0_Y y
 	SET 10 %10000010
 	SET 11 %11101011
 	SET 12 %10010110
@@ -39,15 +47,18 @@ start:
 		GET PALETTE_0 t2
 		MOD t 8
 		CMP t 0
-		ELSE @a
-			INC t2
-		@a:
-			GET k KEYS
-			AND k LEFT
-			CMP k 0
-			IF @b
-				QUIT
-			@b:
-				INC t
-				WAIT
-				JUMP @loop
+		ELSE @1 INC t2
+		@1:
+			CMPLEFT IF @2 DEC x
+		@2:
+			CMPRIGHT IF @3 INC x
+		@3:
+			CMPUP IF @4 DEC y
+		@4:
+			CMPDOWN IF @done INC y
+		@done:
+			GET SPRITE_0_X x
+			GET SPRITE_0_Y y
+			INC t
+			WAIT
+			JUMP @loop
