@@ -3,21 +3,24 @@
 
 JUMP start
 
-p: 0 p_: 0
+ptr: 0 ptr_: 0
 char: 0
 string: C A B B A G E 0
+string2: B A D G E 0
 
 print_string:
 	@loop:
-		GET char p
+		DEREF char ptr
 		CHAR char
-		INC p_
+		INC ptr_
 		CMP char 0
 		ELSE @loop
 	CHAR 10
 	RET
 
 start:
-	REF p string
+	REF ptr string
+	CALL print_string
+	REF ptr string2
 	CALL print_string
 	QUIT

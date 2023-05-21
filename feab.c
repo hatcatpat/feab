@@ -27,8 +27,10 @@ opcode_t opcode[NUM_OPCODES] =
     { "MOREV", 1 },
     { "SET", 2 },
     { "SETV", 2 },
-    { "GET", 2 },
+    { "DEREF", 2 },
+    { "DEREFV", 2 },
     { "REF", 2 },
+    { "REFV", 2 },
     { "ADD", 2 },
     { "SUB", 2 },
     { "INC", 1 },
@@ -196,11 +198,15 @@ run()
                         feab.memory[a] = b;
                         break;
 
-                    case OP_GET:
+                    case OP_DEREFV:
+                        a = (feab.memory[a] << 8) | (feab.memory[a + 1]);
+                    case OP_DEREF:
                         b = (feab.memory[b] << 8) | (feab.memory[b + 1]);
                         feab.memory[a] = feab.memory[b];
                         break;
 
+                    case OP_REFV:
+                        a = (feab.memory[a] << 8) | (feab.memory[a + 1]);
                     case OP_REF:
                         feab.memory[a] = b >> 8, feab.memory[a + 1] = b;
                         break;
